@@ -1,0 +1,152 @@
+<html>
+<head>
+	<title>Example</title>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+	<script>window.jQuery || document.write('<script src="js/jquery-1.9.1.min.js"><\/script>');</script>
+	<script src="js/pint.js"></script>
+	<script src="js/CanvasDye.js"></script>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000000;
+		}
+
+		canvas {
+			background-color: #66CC66;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="myCanvas" width="920" height="640"></canvas>
+	<script>
+
+	$(window).resize(resize)
+	window.onorientationchange = resize;
+	var w, h;
+
+	// From http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/ by @paul_irish
+	window.requestAnimFrame = (function(){
+	  return  window.requestAnimationFrame       ||
+	          window.webkitRequestAnimationFrame ||
+	          window.mozRequestAnimationFrame    ||
+	          function( callback ){
+	            window.setTimeout(callback, 1000 / 60);
+	          };
+	})();
+
+    function resize()
+	{
+		w = window.innerWidth;
+		h = window.innerHeight;
+		canvas.width = w;
+		canvas.height = h;
+		mainRender();
+	}
+
+	var canvas = document.getElementById('myCanvas');
+	var ctx = canvas.getContext('2d');
+
+	var animStates = ['down','downright', 'right', 'upright', 'up', 'upleft', 'left', 'downleft'];
+	var kipos = [];
+
+	function assetsLoaded () {
+		for (var i = 0; i < 50; ++i) {
+			var kipo = new KiposSpriteController();
+			kipos.push(kipo);
+		}
+		kipos.sort(function (k1,k2){return k1.y - k2.y;});
+		requestAnimFrame(mainLoop);
+	}
+
+	// http://bit.ly/VWcExf
+	PINT.loadSpriteSheet('basic-textures.json', assetsLoaded);
+
+	function KiposSpriteController () {
+		this.spriteCache = {};
+		this.animFrame = 0;
+		this.generateRandomPosition();
+		while(this.hitTestOtherKipos()) this.generateRandomPosition();
+		this.color = '#'+Math.floor(Math.random()*16777215).toString(16);
+		this.generateSprite();
+	}
+	KiposSpriteController.prototype.generateRandomPosition = function () {
+		this.x = Math.random()*canvas.width-canvas.width/2;
+		this.y = Math.random()*canvas.height-canvas.height/2;
+	};
+	KiposSpriteController.prototype.logic = function () {
+		if (Math.random()>0.95) {
+			++this.animFrame;
+			this.generateSprite();
+		}
+	};
+	KiposSpriteController.prototype.render = function (ctx) {
+		PINT.print('basic-shadow.png', ctx, this.x, this.y) ;
+		ctx.drawImage(this.sprite, this.x, this.y);
+	};
+	KiposSpriteController.prototype.generateSprite = function () {
+		if (!this.spriteCache[this.animFrame]) {
+			this.sprite = document.createElement('canvas');
+			var anim = animStates[this.animFrame%animStates.length];
+			this.sprite.width = this.sprite.height = 80;
+			var ctx = this.sprite.getContext('2d');
+			if (anim == 'downleft' || anim == 'left' || anim == 'upleft') {
+				//We don't have sprites facing the left side. Use a flipped version of the right ones.
+				anim = anim.replace('left', 'right');
+				ctx.scale(-1, 1);
+				ctx.translate(-80,0);
+			}
+			PINT.print('basic-'+anim+'-legs.png', ctx);
+
+			// We make a tinted version of the body with CanvasDye
+			var buff = document.createElement('canvas');
+			buff.width = buff.height = 80;
+			var bctx = buff.getContext('2d');
+			PINT.print('basic-'+anim+'-body.png', bctx);
+			buff = dyeImageWithColor(buff, this.color, 0.7);
+			ctx.drawImage(buff, 0, 0);
+
+			PINT.print('basic-'+anim+'-head.png', ctx);
+			this.spriteCache[this.animFrame] = this.sprite;
+		} else this.sprite = this.spriteCache[this.animFrame];	
+	};
+	KiposSpriteController.prototype.hitTest = function (k) {
+		return (Math.abs(this.x-k.x) < 45 && Math.abs(this.y-k.y) < 45);
+	};
+	KiposSpriteController.prototype.hitTestOtherKipos = function () {
+		for (var i = 0; i < kipos.length; ++i) {
+			if (this.hitTest(kipos[i])) return true;
+		}
+		return false;
+	};
+
+	function mainLoop() {
+		requestAnimFrame(mainLoop);
+		mainLogic();
+		mainRender();
+	}
+
+	function mainLogic () {
+		for (var i = 0; i < kipos.length; ++i) {
+			var kipo = kipos[i];
+			kipo.logic();
+		}
+	}
+
+	function mainRender() {
+		ctx.clearRect(0,0,canvas.width,canvas.height);
+		ctx.save();
+		ctx.translate(w/2, h/2);
+		for (var i = 0; i < kipos.length; ++i) {
+			var kipo = kipos[i];
+			kipo.render(ctx);
+		}
+		ctx.restore();
+	}
+
+	//Initial adjustment to screen
+	resize();
+
+	</script>
+</body>
+</html>
