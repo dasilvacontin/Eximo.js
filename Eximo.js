@@ -1,3 +1,4 @@
+window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"><\/script>');
 var Eximo = {};
 Eximo.sprites = {};
 Eximo.getSpriteInfo = function (spriteName) {
