@@ -64,7 +64,7 @@
 
 	function KiposSpriteController () {
 		this.spriteCache = {};
-		this.animFrame = 0;
+		this.animFrame = -1;
 		this.generateRandomPosition();
 		while(this.hitTestOtherKipos()) this.generateRandomPosition();
 		this.color = '#'+Math.floor(Math.random()*16777215).toString(16);
@@ -75,7 +75,7 @@
 		this.y = Math.random()*canvas.height-canvas.height/2;
 	};
 	KiposSpriteController.prototype.logic = function () {
-		if (Math.random()>0.95) {
+		if (Math.random()>0.99) {
 			++this.animFrame;
 			this.generateSprite();
 		}
@@ -87,14 +87,17 @@
 	KiposSpriteController.prototype.generateSprite = function () {
 		if (!this.spriteCache[this.animFrame]) {
 			this.sprite = document.createElement('canvas');
-			var anim = animStates[this.animFrame%animStates.length];
 			this.sprite.width = this.sprite.height = 80;
 			var ctx = this.sprite.getContext('2d');
-			if (anim == 'downleft' || anim == 'left' || anim == 'upleft') {
-				//We don't have sprites facing the left side. Use a flipped version of the right ones.
-				anim = anim.replace('left', 'right');
-				ctx.scale(-1, 1);
-				ctx.translate(-80,0);
+			var anim = 'sleep';
+			if (this.animFrame >= 0) {
+				var anim = animStates[this.animFrame%animStates.length];
+				if (anim == 'downleft' || anim == 'left' || anim == 'upleft') {
+					//We don't have sprites facing the left side. Use a flipped version of the right ones.
+					anim = anim.replace('left', 'right');
+					ctx.scale(-1, 1);
+					ctx.translate(-80,0);
+				}
 			}
 			Eximo.drawSprite('basic-'+anim+'-legs.png', ctx);
 
