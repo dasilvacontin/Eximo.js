@@ -48,43 +48,66 @@
 	var ctx = canvas.getContext('2d');
 
 	var animStates = ['down','downright', 'right', 'upright', 'up', 'upleft', 'left', 'downleft'];
+	var gameObjects = [];
 	var kipos = [];
 
 	function assetsLoaded () {
 		for (var i = 0; i < 50; ++i) {
-			var kipo = new KiposSpriteController();
-			kipos.push(kipo);
+			var kipo = new KiposController();
+			gameObjects.push(kipo);
 		}
-		kipos.sort(function (k1,k2){return k1.y - k2.y;});
+		gameObjects.sort(function (g1,g2){return g1.y - g2.y;});
 		requestAnimFrame(mainLoop);
 	}
 
 	// http://bit.ly/VWcExf
-	Eximo.loadSpriteSheet('basic-textures.json', assetsLoaded);
+	Eximo.loadSpriteSheets(['basic-textures.json'], assetsLoaded);
 
-	function KiposSpriteController () {
+	function GameObject () {
+
+	}
+	GameObject.prototype = {
+		x : 0,
+		y : 0,
+		radius : 20,
+		hitTestGameObject : function (g) {
+			var radiusSum = this.radius + g.radius;
+			return (Math.abs(this.x-g.x) < radiusSum && Math.abs(this.y-g.y) < radiusSum); 
+		},
+		hitTestOtherGameObject : function () {
+			for (var i = 0; i < gameObjects.length; ++i) {
+				if (gameObjects[i] != this && this.hitTestGameObject(gameObjects[i])) return true;
+			}
+			return false;
+		},
+		logic : function () {},
+		render : function (ctx) {},
+		generateRandomPosition : function () {
+			this.x = Math.random()*canvas.width-canvas.width/2;
+			this.y = Math.random()*canvas.height-canvas.height/2;
+			if (this.hitTestOtherGameObject()) this.generateRandomPosition();
+		}
+	};
+
+	function KiposController () {
 		this.spriteCache = {};
 		this.animFrame = -1;
 		this.generateRandomPosition();
-		while(this.hitTestOtherKipos()) this.generateRandomPosition();
 		this.color = '#'+Math.floor(Math.random()*16777215).toString(16);
 		this.generateSprite();
 	}
-	KiposSpriteController.prototype.generateRandomPosition = function () {
-		this.x = Math.random()*canvas.width-canvas.width/2;
-		this.y = Math.random()*canvas.height-canvas.height/2;
-	};
-	KiposSpriteController.prototype.logic = function () {
+	KiposController.prototype = new GameObject ();
+	KiposController.prototype.logic = function () {
 		if (Math.random()>0.99) {
 			++this.animFrame;
 			this.generateSprite();
 		}
 	};
-	KiposSpriteController.prototype.render = function (ctx) {
+	KiposController.prototype.render = function (ctx) {
 		Eximo.drawSprite('basic-shadow.png', ctx, this.x, this.y) ;
 		ctx.drawImage(this.sprite, this.x, this.y);
 	};
-	KiposSpriteController.prototype.generateSprite = function () {
+	KiposController.prototype.generateSprite = function () {
 		if (!this.spriteCache[this.animFrame]) {
 			this.sprite = document.createElement('canvas');
 			this.sprite.width = this.sprite.height = 80;
@@ -108,15 +131,6 @@
 			this.spriteCache[this.animFrame] = this.sprite;
 		} else this.sprite = this.spriteCache[this.animFrame];	
 	};
-	KiposSpriteController.prototype.hitTest = function (k) {
-		return (Math.abs(this.x-k.x) < 45 && Math.abs(this.y-k.y) < 45);
-	};
-	KiposSpriteController.prototype.hitTestOtherKipos = function () {
-		for (var i = 0; i < kipos.length; ++i) {
-			if (this.hitTest(kipos[i])) return true;
-		}
-		return false;
-	};
 
 	function mainLoop() {
 		requestAnimFrame(mainLoop);
@@ -125,9 +139,8 @@
 	}
 
 	function mainLogic () {
-		for (var i = 0; i < kipos.length; ++i) {
-			var kipo = kipos[i];
-			kipo.logic();
+		for (var i = 0; i < gameObjects.length; ++i) {
+			gameObjects[i].logic();
 		}
 	}
 
@@ -135,9 +148,8 @@
 		ctx.clearRect(0,0,canvas.width,canvas.height);
 		ctx.save();
 		ctx.translate(w/2, h/2);
-		for (var i = 0; i < kipos.length; ++i) {
-			var kipo = kipos[i];
-			kipo.render(ctx);
+		for (var i = 0; i < gameObjects.length; ++i) {
+			gameObjects[i].render(ctx);
 		}
 		ctx.restore();
 	}

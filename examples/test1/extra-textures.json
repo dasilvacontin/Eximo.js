@@ -1,0 +1,92 @@
+{"frames": {
+
+"Apple.png":
+{
+	"frame": {"x":2,"y":2,"w":31,"h":31},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":31,"h":31},
+	"sourceSize": {"w":31,"h":31}
+},
+"Blue Berry.png":
+{
+	"frame": {"x":35,"y":2,"w":31,"h":31},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":31,"h":31},
+	"sourceSize": {"w":31,"h":31}
+},
+"Bush.png":
+{
+	"frame": {"x":68,"y":2,"w":110,"h":116},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":110,"h":116},
+	"sourceSize": {"w":110,"h":116}
+},
+"KiposLogo.png":
+{
+	"frame": {"x":180,"y":2,"w":300,"h":113},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":113},
+	"sourceSize": {"w":300,"h":113}
+},
+"ObjectTree.png":
+{
+	"frame": {"x":2,"y":120,"w":340,"h":453},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":453},
+	"sourceSize": {"w":340,"h":453}
+},
+"Pear.png":
+{
+	"frame": {"x":344,"y":120,"w":31,"h":31},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":31,"h":31},
+	"sourceSize": {"w":31,"h":31}
+},
+"Pumpkin.png":
+{
+	"frame": {"x":377,"y":120,"w":120,"h":100},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":120,"h":100},
+	"sourceSize": {"w":120,"h":100}
+},
+"WallTile.png":
+{
+	"frame": {"x":2,"y":575,"w":92,"h":92},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":92,"h":92},
+	"sourceSize": {"w":92,"h":92}
+},
+"YellowFoodBowl.png":
+{
+	"frame": {"x":96,"y":575,"w":70,"h":60},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":60},
+	"sourceSize": {"w":70,"h":60}
+},
+"ballRed.png":
+{
+	"frame": {"x":168,"y":575,"w":55,"h":61},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":61},
+	"sourceSize": {"w":55,"h":61}
+}},
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker ",
+	"version": "1.0",
+	"image": "extra-textures.png",
+	"format": "RGBA8888",
+	"size": {"w":512,"h":1024},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:b0829d83cd4655918f6b2b11e9aced62$"
+}
+}
