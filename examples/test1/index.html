@@ -3,7 +3,7 @@
 	<title>Example</title>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 	<script>window.jQuery || document.write('<script src="js/jquery-1.9.1.min.js"><\/script>');</script>
-	<script src="js/Eximo.min.js"></script>
+	<script src="js/Eximo.js"></script>
 	<script src="js/CanvasDye.min.js"></script>
 	<style>
 		body {
@@ -51,18 +51,6 @@
 	var gameObjects = [];
 	var kipos = [];
 
-	function assetsLoaded () {
-		for (var i = 0; i < 50; ++i) {
-			var kipo = new KiposController();
-			gameObjects.push(kipo);
-		}
-		gameObjects.sort(function (g1,g2){return g1.y - g2.y;});
-		requestAnimFrame(mainLoop);
-	}
-
-	// http://bit.ly/VWcExf
-	Eximo.loadSpriteSheets(['basic-textures.json'], assetsLoaded);
-
 	function GameObject () {
 
 	}
@@ -82,6 +70,10 @@
 		},
 		logic : function () {},
 		render : function (ctx) {},
+		renderCenter : function (ctx) {
+			ctx.fillStyle = '#0000ee';
+			ctx.fillRect(this.x, this.y, 1, 1);
+		},
 		generateRandomPosition : function () {
 			this.x = Math.random()*canvas.width-canvas.width/2;
 			this.y = Math.random()*canvas.height-canvas.height/2;
@@ -90,22 +82,81 @@
 	};
 
 	function KiposController () {
+		this.radius = 25;
 		this.spriteCache = {};
 		this.animFrame = -1;
+		this.timer = Math.round(Math.random()*5)*1000 + 2000;
+		this.state = 'idle';
+		this.moveVector = {x:0,y:0};
 		this.generateRandomPosition();
 		this.color = '#'+Math.floor(Math.random()*16777215).toString(16);
 		this.generateSprite();
 	}
 	KiposController.prototype = new GameObject ();
 	KiposController.prototype.logic = function () {
-		if (Math.random()>0.99) {
-			++this.animFrame;
-			this.generateSprite();
+		switch (this.state) {
+			case 'idle':
+				if (Math.random()>0.99) {
+					++this.animFrame;
+					this.generateSprite();
+				}
+			break;
+
+			case 'move':
+				this.cx = this.x;
+				this.cy = this.y;
+				this.x += this.moveVector.x*delta/30;
+				this.y += this.moveVector.y*delta/30;
+				if (this.hitTestOtherGameObject()) {
+					console.log('hit test');
+					this.x = this.cx;
+					this.y = this.cy;
+					this.timer = 0;
+				}
+			break;
 		}
+		this.timer -= delta;
+		if (this.timer <= 0) {
+			console.log('new action');
+			var m = Math.random()
+			if (m < 0.25) {
+				this.state = 'idle';
+			} else if (m < 0.35) {
+				this.state = 'sleep';
+				this.animFrame = -1;
+				this.generateSprite();
+			} else {
+				this.state = 'move';
+				this.move();
+			}
+			this.timer = Math.round(Math.random()*4)*1000;
+		}
+		
+	};
+	KiposController.prototype.move = function () {
+		this.moveVector.x = Math.random()*2-1;
+		this.moveVector.y = Math.random()*2-1;
+		var mod = Math.sqrt(Math.pow(this.moveVector.x, 2)+Math.pow(this.moveVector.y, 2));
+		this.moveVector.x /= mod;
+		this.moveVector.y /= mod;
+		
+		var theta = Math.atan2(-this.moveVector.y, this.moveVector.x);
+		theta *= 180/Math.PI // rads to degs
+		if (theta < 0) theta += 360;
+		if (337.5 < theta || theta <= 22.5) this.animFrame = 2;
+		else if (22.5 < theta && theta <= 67.5) this.animFrame = 3;
+		else if (67.5 < theta && theta <= 112.5) this.animFrame = 4;
+		else if (112.5 < theta && theta <= 157.5) this.animFrame = 5;
+		else if (157.5 < theta && theta <= 202.5) this.animFrame = 6;
+		else if (202.5 < theta && theta <= 245.5) this.animFrame = 7;
+		else if (245.7 < theta && theta <= 292.5) this.animFrame = 0;
+		else this.animFrame = 1;
+		this.generateSprite();
+		
 	};
 	KiposController.prototype.render = function (ctx) {
-		Eximo.drawSprite('basic-shadow.png', ctx, this.x, this.y) ;
-		ctx.drawImage(this.sprite, this.x, this.y);
+		Eximo.drawSprite('basic-shadow.png', ctx, this.x-40, this.y-65) ;
+		ctx.drawImage(this.sprite, this.x-40, this.y-65);
 	};
 	KiposController.prototype.generateSprite = function () {
 		if (!this.spriteCache[this.animFrame]) {
@@ -125,14 +176,36 @@
 			Eximo.drawSprite('basic-'+anim+'-legs.png', ctx);
 
 			// We make a tinted version of the body with CanvasDye
-			ctx.drawImage(dyeImageWithColor(Eximo.getSprite('basic-'+anim+'-body.png'), this.color, 0.7), 0, 0);
+			ctx.drawImage(dyeImageWithColor(Eximo.getSprite('basic-'+anim+'-body.png'), this.color, 1), 0, 0);
 
 			Eximo.drawSprite('basic-'+anim+'-head.png', ctx);
 			this.spriteCache[this.animFrame] = this.sprite;
 		} else this.sprite = this.spriteCache[this.animFrame];	
 	};
 
+	var fruitSprites = ["Apple.png","Blue Berry.png","Pear.png"];
+
+	function Fruit () {
+		this.fruitSprite = fruitSprites[Math.floor(Math.random()*fruitSprites.length)];
+		this.t = Math.round(Math.random()*100);
+		this.radius = 10;
+		this.generateRandomPosition();
+	}
+	Fruit.prototype = new GameObject();
+	Fruit.prototype.logic = function () {
+		++this.t;
+	}
+	Fruit.prototype.render = function (ctx) {
+		var m = Math.sin(this.t/20)
+		Eximo.drawSprite('basic-shadow.png', ctx, this.x-20+m*2.5, this.y-30+m*3, 40-m*5, 40-m*5);
+		Eximo.drawSprite(this.fruitSprite, ctx, this.x-15, this.y-50-m*20);
+	}
+	var oldDate = +new Date();
+	var delta = 0;
 	function mainLoop() {
+		var currentDate = +new Date();
+		delta = currentDate - oldDate;
+		oldDate = currentDate;
 		requestAnimFrame(mainLoop);
 		mainLogic();
 		mainRender();
@@ -145,14 +218,45 @@
 	}
 
 	function mainRender() {
+		gameObjects.sort(function (g1,g2){return g1.y - g2.y;});
 		ctx.clearRect(0,0,canvas.width,canvas.height);
 		ctx.save();
 		ctx.translate(w/2, h/2);
 		for (var i = 0; i < gameObjects.length; ++i) {
 			gameObjects[i].render(ctx);
+			//gameObjects[i].renderCenter(ctx);
 		}
 		ctx.restore();
 	}
+
+	function Bush () {
+		this.radius = 35;
+		this.generateRandomPosition();
+	}
+	Bush.prototype = new GameObject();
+	Bush.prototype.render = function () {
+		Eximo.drawSprite('Bush.png', ctx, this.x-110/2, this.y-90);
+	};
+
+	function Tree () {
+		this.radius = 35;
+		this.generateRandomPosition();
+	}
+	Tree.prototype = new GameObject();
+	Tree.prototype.render = function () {
+		Eximo.drawSprite('ObjectTree.png', ctx, this.x-340/2, this.y-380);
+	}
+
+	function assetsLoaded () {
+		for (var i = 0; i < 20; ++i) gameObjects.push(new KiposController());
+		for (var i = 0; i < 10; ++i) gameObjects.push(new Bush());
+		for (var i = 0; i < 10; ++i) gameObjects.push(new Fruit());
+		for (var i = 0; i < 2; ++i) gameObjects.push(new Tree());
+		requestAnimFrame(mainLoop);
+	}
+
+	// http://bit.ly/VWcExf
+	Eximo.loadSpriteSheets(['basic-textures.json', 'extra-textures.json'], assetsLoaded);
 
 	//Initial adjustment to screen
 	resize();
