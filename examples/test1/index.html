@@ -3,8 +3,8 @@
 	<title>Example</title>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 	<script>window.jQuery || document.write('<script src="js/jquery-1.9.1.min.js"><\/script>');</script>
-	<script src="js/pint.js"></script>
-	<script src="js/CanvasDye.js"></script>
+	<script src="js/Eximo.min.js"></script>
+	<script src="js/CanvasDye.min.js"></script>
 	<style>
 		body {
 			margin: 0;
@@ -60,7 +60,7 @@
 	}
 
 	// http://bit.ly/VWcExf
-	PINT.loadSpriteSheet('basic-textures.json', assetsLoaded);
+	Eximo.loadSpriteSheet('basic-textures.json', assetsLoaded);
 
 	function KiposSpriteController () {
 		this.spriteCache = {};
@@ -81,7 +81,7 @@
 		}
 	};
 	KiposSpriteController.prototype.render = function (ctx) {
-		PINT.print('basic-shadow.png', ctx, this.x, this.y) ;
+		Eximo.drawSprite('basic-shadow.png', ctx, this.x, this.y) ;
 		ctx.drawImage(this.sprite, this.x, this.y);
 	};
 	KiposSpriteController.prototype.generateSprite = function () {
@@ -96,17 +96,12 @@
 				ctx.scale(-1, 1);
 				ctx.translate(-80,0);
 			}
-			PINT.print('basic-'+anim+'-legs.png', ctx);
+			Eximo.drawSprite('basic-'+anim+'-legs.png', ctx);
 
 			// We make a tinted version of the body with CanvasDye
-			var buff = document.createElement('canvas');
-			buff.width = buff.height = 80;
-			var bctx = buff.getContext('2d');
-			PINT.print('basic-'+anim+'-body.png', bctx);
-			buff = dyeImageWithColor(buff, this.color, 0.7);
-			ctx.drawImage(buff, 0, 0);
+			ctx.drawImage(dyeImageWithColor(Eximo.getSprite('basic-'+anim+'-body.png'), this.color, 0.7), 0, 0);
 
-			PINT.print('basic-'+anim+'-head.png', ctx);
+			Eximo.drawSprite('basic-'+anim+'-head.png', ctx);
 			this.spriteCache[this.animFrame] = this.sprite;
 		} else this.sprite = this.spriteCache[this.animFrame];	
 	};
