@@ -1,0 +1,36 @@
+<html>
+<head>
+	<style>
+
+	</style>
+	<script src="js/jquery-1.9.1.min.js"></script>
+	<script src="js/Eximo.js"></script>
+</head>
+<body>
+
+	<canvas id="myCanvas"></canvas>
+
+	<script>
+
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+
+		var anim = ["element_green_square.png", "element_yellow_square.png", "element_red_square.png", "element_purple_square.png"];
+		var currentSprite = 0;
+		var x = 0;
+		function mainLoop () {
+			requestAnimationFrame(mainLoop);
+			context.clearRect(0,0,canvas.width,canvas.height);
+			if (+new Date () % 1000 < 16) ++currentSprite;
+			currentSprite = currentSprite%anim.length;
+			Eximo.drawSprite(anim[currentSprite], context, ++x, 0);
+		}
+
+		Eximo.loadSpriteSheets(['spTexture.json'], function () {
+			requestAnimationFrame(mainLoop);
+		});
+
+	</script>
+
+</body>
+</html>
